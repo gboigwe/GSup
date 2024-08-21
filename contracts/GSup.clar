@@ -5,6 +5,10 @@
 
 ;; Supply Chain Management Smart Contract in Clarity
 
+;; Supply Chain Management Smart Contract in Clarity
+
+;; Supply Chain Management Smart Contract in Clarity
+
 (define-constant contract-owner 'SPCM-1234)
 
 ;; User Roles
@@ -47,7 +51,7 @@
 ;; Check if the caller has the required role
 (define-private (has-role (role uint))
   (let ((users (map-get? role-users role)))
-    (if (and users (member? tx-sender users))
+    (if (and users (is-member? tx-sender users))
       true
       false)))
 
@@ -73,10 +77,10 @@
   (let ((current-stage (get current-stage (map-get? product-lifecycle product-id))))
     (if (and (> new-stage current-stage) (<= new-stage CONSUMER))
       (if (cond
-            ((= new-stage MANUFACTURING) (has-role ROLE_MANUFACTURER))
-            ((= new-stage DISTRIBUTION) (has-role ROLE_DISTRIBUTOR))
-            ((= new-stage RETAIL) (has-role ROLE_RETAILER))
-            ((= new-stage CONSUMER) (has-role ROLE_CONSUMER))
+            ((is-eq new-stage MANUFACTURING) (has-role ROLE_MANUFACTURER))
+            ((is-eq new-stage DISTRIBUTION) (has-role ROLE_DISTRIBUTOR))
+            ((is-eq new-stage RETAIL) (has-role ROLE_RETAILER))
+            ((is-eq new-stage CONSUMER) (has-role ROLE_CONSUMER))
             (true false))
         (begin
           (map-set product-lifecycle product-id
