@@ -5,11 +5,7 @@
 
 ;; Supply Chain Management Smart Contract in Clarity
 
-;; Supply Chain Management Smart Contract in Clarity
-
-;; Supply Chain Management Smart Contract in Clarity
-
-(define-constant contract-owner 'SPCM-1234)
+(define-constant contract-owner 'SP2C2PYXQ0KXKXKXKXKXKXKXKXKXKXKXKXKXKXKX'description)
 
 ;; User Roles
 (define-constant ROLE_MANUFACTURER 0)
