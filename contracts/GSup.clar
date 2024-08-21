@@ -5,7 +5,7 @@
 
 ;; Supply Chain Management Smart Contract in Clarity
 
-(define-constant contract-owner 'SP2C2PYXQ0KXKXKXKXKXKXKXKXKXKXKXKXKXKXKX'description)
+(define-constant contract-owner 'SP2C2PYXQ0KXKXKXKXKXKXKXKXKXKXKXKXKXKXK)
 
 ;; User Roles
 (define-constant ROLE_MANUFACTURER 0)
@@ -28,8 +28,7 @@
 ;; Product Lifecycle Data
 (define-map product-lifecycle
   ((product-id int))
-  ((current-stage int)
-   (timestamps (list 5 int))))
+  ((current-stage uint) (timestamps (list 10 uint))))
 
 ;; Product Authenticity Data
 (define-map product-authenticity
