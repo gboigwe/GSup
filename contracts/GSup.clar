@@ -5,7 +5,8 @@
 
 ;; Supply Chain Management Smart Contract in Clarity
 
-(define-constant contract-owner 'SP2C2PYXQ0KXKXKXKXKXKXKXKXKXKXKXKXKXKXK)
+;; Define contract owner
+(define-constant contract-owner "SP2C2PYXQ0KXKXKXKXKXKXKXKXKXKXKXKXKXKXK")
 
 ;; User Roles
 (define-constant ROLE_MANUFACTURER 0)
@@ -27,12 +28,12 @@
 
 ;; Product Lifecycle Data
 (define-map product-lifecycle
-  ((product-id int))
+  ((product-id uint))
   ((current-stage uint) (timestamps (list 10 uint))))
 
 ;; Product Authenticity Data
 (define-map product-authenticity
-  ((product-id int))
+  ((product-id uint))
   ((origin-info (optional (buff 256)))
    (manufacturing-info (optional (buff 256)))
    (distribution-info (optional (buff 256)))
@@ -45,8 +46,8 @@
 
 ;; Check if the caller has the required role
 (define-private (has-role (role uint))
-  (let ((users (map-get? role-users role)))
-    (if (and users (is-member? tx-sender users))
+  (let ((role-data (map-get? role-users {role: role})))
+    (if (and role-data (is-some (member tx-sender (get users role-data))))
       true
       false)))
 
@@ -55,14 +56,14 @@
   (if (has-role ROLE_MANUFACTURER)
     (begin
       (map-insert product-lifecycle product-id
-        (list ORIGIN (list
+        {current-stage: ORIGIN, timestamps: (list
           (get-block-height)
           (get-block-height)
           (get-block-height)
           (get-block-height)
-          (get-block-height))))
+          (get-block-height))})
       (map-insert product-authenticity product-id
-        (list None None None None))
+        {origin-info: none, manufacturing-info: none, distribution-info: none, retail-info: none})
       (emit (product-added product-id))
       (ok true))
     (err "Unauthorized: Only manufacturers can add products")))
@@ -79,8 +80,7 @@
             (true false))
         (begin
           (map-set product-lifecycle product-id
-            (list new-stage
-              (list-append (get timestamps (map-get? product-lifecycle product-id)) (get-block-height))))
+            {current-stage: new-stage, timestamps: (list-append (get timestamps (map-get? product-lifecycle product-id)) (get-block-height))})
           (emit (product-stage-updated product-id new-stage))
           (ok true))
         (err "Unauthorized: You do not have permission to update this stage"))
@@ -97,7 +97,7 @@
           (has-role ROLE_RETAILER))
     (begin
       (map-set product-authenticity product-id
-        (list origin-info manufacturing-info distribution-info retail-info))
+        {origin-info: origin-info, manufacturing-info: manufacturing-info, distribution-info: distribution-info, retail-info: retail-info})
       (emit (product-authenticity-updated product-id))
       (ok true))
     (err "Unauthorized: Only authorized roles can update product authenticity")))
@@ -117,7 +117,7 @@
 
 ;; Add users to a specific role
 (define-public (add-user-to-role (role uint) (user principal))
-  (if (eq? tx-sender contract-owner)
+  (if (is-eq tx-sender contract-owner)
     (begin
       (map-set role-users role (list-append (map-get? role-users role) user))
       (ok true))
