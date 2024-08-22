@@ -1,6 +1,7 @@
 import React from 'react';
 import { Connect } from '@stacks/connect-react';
 import { StacksTestnet } from '@stacks/network';
+import AddProduct from './components/AddProduct';
 import './App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
     >
       <div className="App">
         <h1>Supply Chain Management</h1>
+        <AddProduct />
       </div>
     </Connect>
   );
