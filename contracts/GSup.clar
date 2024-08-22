@@ -6,119 +6,123 @@
 ;; Supply Chain Management Smart Contract in Clarity
 
 ;; Define contract owner
-(define-constant contract-owner "SP2C2PYXQ0KXKXKXKXKXKXKXKXKXKXKXKXKXKXK")
+(define-data-var contract-owner principal tx-sender)
 
 ;; User Roles
-(define-constant ROLE_MANUFACTURER 0)
-(define-constant ROLE_DISTRIBUTOR 1)
-(define-constant ROLE_RETAILER 2)
-(define-constant ROLE_CONSUMER 3)
+(define-constant ROLE_MANUFACTURER u0)
+(define-constant ROLE_DISTRIBUTOR u1)
+(define-constant ROLE_RETAILER u2)
+(define-constant ROLE_CONSUMER u3)
 
 ;; Role-User Mapping
 (define-map role-users
-  ((role uint))
-  ((users (list 10 principal))))
+  {role: uint}
+  {users: (list 100 principal)})
 
 ;; Product Lifecycle Stages
-(define-constant ORIGIN 0)
-(define-constant MANUFACTURING 1)
-(define-constant DISTRIBUTION 2)
-(define-constant RETAIL 3)
-(define-constant CONSUMER 4)
+(define-constant ORIGIN u0)
+(define-constant MANUFACTURING u1)
+(define-constant DISTRIBUTION u2)
+(define-constant RETAIL u3)
+(define-constant CONSUMER u4)
 
 ;; Product Lifecycle Data
 (define-map product-lifecycle
-  ((product-id uint))
-  ((current-stage uint) (timestamps (list 10 uint))))
+  {product-id: uint}
+  {current-stage: uint, timestamps: (list 10 uint)})
 
 ;; Product Authenticity Data
 (define-map product-authenticity
-  ((product-id uint))
-  ((origin-info (optional (buff 256)))
-   (manufacturing-info (optional (buff 256)))
-   (distribution-info (optional (buff 256)))
-   (retail-info (optional (buff 256)))))
+  {product-id: uint}
+  {origin-info: (optional (buff 256)),
+   manufacturing-info: (optional (buff 256)),
+   distribution-info: (optional (buff 256)),
+   retail-info: (optional (buff 256))})
 
-;; Events
-(define-event product-added (product-id uint))
-(define-event product-stage-updated (product-id uint stage uint))
-(define-event product-authenticity-updated (product-id uint))
+;; Log product-added event
+(define-private (log-product-added (product-id uint))
+  (print {event: "product-added", product-id: product-id}))
+
+;; Log product-stage-updated event
+(define-private (log-product-stage-updated (product-id uint) (stage uint))
+  (print {event: "product-stage-updated", product-id: product-id, stage: stage}))
+
+;; Log product-authenticity-updated event
+(define-private (log-product-authenticity-updated (product-id uint))
+  (print {event: "product-authenticity-updated", product-id: product-id}))
 
 ;; Check if the caller has the required role
 (define-private (has-role (role uint))
-  (let ((role-data (map-get? role-users {role: role})))
-    (if (and role-data (is-some (member tx-sender (get users role-data))))
-      true
-      false)))
+  (match (map-get? role-users {role: role})
+    role-data (is-some (index-of (get users role-data) tx-sender))
+    false))
 
 ;; Add a new product to the supply chain
 (define-public (add-product (product-id uint))
-  (if (has-role ROLE_MANUFACTURER)
-    (begin
-      (map-insert product-lifecycle product-id
-        {current-stage: ORIGIN, timestamps: (list
-          (get-block-height)
-          (get-block-height)
-          (get-block-height)
-          (get-block-height)
-          (get-block-height))})
-      (map-insert product-authenticity product-id
-        {origin-info: none, manufacturing-info: none, distribution-info: none, retail-info: none})
-      (emit (product-added product-id))
-      (ok true))
-    (err "Unauthorized: Only manufacturers can add products")))
+  (begin
+    (asserts! (has-role ROLE_MANUFACTURER) (err "Unauthorized"))
+    (map-set product-lifecycle
+      {product-id: product-id}
+      {current-stage: ORIGIN, 
+       timestamps: (list 
+         block-height
+         block-height
+         block-height
+         u0 u0 u0 u0 u0 u0 u0)})
+    (log-product-added product-id)
+    (ok true)))
 
-;; Update the current stage of a product in the supply chain
-(define-public (update-product-stage (product-id uint) (new-stage uint))
-  (let ((current-stage (get current-stage (map-get? product-lifecycle product-id))))
-    (if (and (> new-stage current-stage) (<= new-stage CONSUMER))
-      (if (cond
-            ((is-eq new-stage MANUFACTURING) (has-role ROLE_MANUFACTURER))
-            ((is-eq new-stage DISTRIBUTION) (has-role ROLE_DISTRIBUTOR))
-            ((is-eq new-stage RETAIL) (has-role ROLE_RETAILER))
-            ((is-eq new-stage CONSUMER) (has-role ROLE_CONSUMER))
-            (true false))
-        (begin
-          (map-set product-lifecycle product-id
-            {current-stage: new-stage, timestamps: (list-append (get timestamps (map-get? product-lifecycle product-id)) (get-block-height))})
-          (emit (product-stage-updated product-id new-stage))
-          (ok true))
-        (err "Unauthorized: You do not have permission to update this stage"))
-      (err "Invalid stage update"))))
+(define-public (update-product-stage (product-id uint) (stage uint))
+  (begin
+    (asserts! (has-role ROLE_DISTRIBUTOR) (err "Unauthorized"))
+    (match (map-get? product-lifecycle {product-id: product-id})
+      current-data (begin
+        (map-set product-lifecycle
+          {product-id: product-id}
+          (merge current-data {current-stage: stage}))
+        (log-product-stage-updated product-id stage)
+        (ok true))
+      (err "Product not found"))))
 
-;; Update the authenticity information for a product
-(define-public (update-product-authenticity (product-id uint)
-                                  (origin-info (optional (buff 256)))
-                                  (manufacturing-info (optional (buff 256)))
-                                  (distribution-info (optional (buff 256)))
-                                  (retail-info (optional (buff 256))))
-  (if (or (has-role ROLE_MANUFACTURER)
-          (has-role ROLE_DISTRIBUTOR)
-          (has-role ROLE_RETAILER))
-    (begin
-      (map-set product-authenticity product-id
-        {origin-info: origin-info, manufacturing-info: manufacturing-info, distribution-info: distribution-info, retail-info: retail-info})
-      (emit (product-authenticity-updated product-id))
-      (ok true))
-    (err "Unauthorized: Only authorized roles can update product authenticity")))
+(define-public (update-product-authenticity (product-id uint) 
+                                            (origin-info (optional (buff 256))) 
+                                            (manufacturing-info (optional (buff 256))) 
+                                            (distribution-info (optional (buff 256))) 
+                                            (retail-info (optional (buff 256))))
+  (begin
+    (asserts! (has-role ROLE_RETAILER) (err "Unauthorized"))
+    (map-set product-authenticity
+      {product-id: product-id}
+      {origin-info: origin-info, 
+       manufacturing-info: manufacturing-info, 
+       distribution-info: distribution-info, 
+       retail-info: retail-info})
+    (log-product-authenticity-updated product-id)
+    (ok true)))
 
 ;; View the current stage and authenticity of a product
 (define-read-only (get-product-info (product-id uint))
-  (let ((product-lifecycle-data (map-get? product-lifecycle product-id))
-        (product-authenticity-data (map-get? product-authenticity product-id)))
-    (if (and product-lifecycle-data product-authenticity-data)
-      (list
-        (get current-stage product-lifecycle-data)
-        (get origin-info product-authenticity-data)
-        (get manufacturing-info product-authenticity-data)
-        (get distribution-info product-authenticity-data)
-        (get retail-info product-authenticity-data))
+  (let ((product-lifecycle-data (map-get? product-lifecycle {product-id: product-id}))
+        (product-authenticity-data (map-get? product-authenticity {product-id: product-id})))
+    (if (and (is-some product-lifecycle-data) (is-some product-authenticity-data))
+      (ok {
+        current-stage: (get current-stage (unwrap-panic product-lifecycle-data)),
+        origin-info: (get origin-info (unwrap-panic product-authenticity-data)),
+        manufacturing-info: (get manufacturing-info (unwrap-panic product-authenticity-data)),
+        distribution-info: (get distribution-info (unwrap-panic product-authenticity-data)),
+        retail-info: (get retail-info (unwrap-panic product-authenticity-data))
+      })
       (err "Product not found"))))
 
 ;; Add users to a specific role
 (define-public (add-user-to-role (role uint) (user principal))
-  (if (is-eq tx-sender contract-owner)
-    (begin
-      (map-set role-users role (list-append (map-get? role-users role) user))
-      (ok true))
-    (err "Unauthorized: Only the contract owner can add users to roles")))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) (err "Unauthorized: Only the contract owner can add users to roles"))
+    (match (map-get? role-users {role: role})
+      current-users (begin
+        (map-set role-users 
+          {role: role} 
+          {users: (unwrap! (as-max-len? (append (get users current-users) user) u100) 
+                           (err "Too many users for this role"))})
+        (ok true))
+      (err "Role not found"))))
