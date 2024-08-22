@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { updateProductStage } from '../utils/contractInteractions';
-import { STAGES } from '../utils/constants';
+import { updateProductStage } from '../../utils/contractInteractions';
+import { STAGES } from '../../utils/constants';
+import './UpdateProductStage.css';
 
 function UpdateProductStage() {
   const [productId, setProductId] = useState('');

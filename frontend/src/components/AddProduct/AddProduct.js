@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { addProduct } from '../utils/contractInteractions';
+import { addProduct } from '../../utils/contractInteractions';
+import './AddProduct.css';
 
 function AddProduct() {
   const [productId, setProductId] = useState('');
