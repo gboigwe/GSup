@@ -3,7 +3,8 @@ import { Connect } from '@stacks/connect-react';
 import { StacksTestnet } from '@stacks/network';
 import AddProduct from './components/AddProduct/AddProduct';
 import UpdateProductStage from './components/UpdateProductStage/UpdateProductStage';
-import UpdateProductAuthenticity from './components/UpdateProductAuthenticity';
+import UpdateProductAuthenticity from './components/UpdateProductAuthenticity/UpdateProductAuthenticity';
+import GetProductInfo from './components/GetProductInfo/GetProductInfo';
 import './App.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <AddProduct />
         <UpdateProductStage />
         <UpdateProductAuthenticity />
+        <GetProductInfo />
       </div>
     </Connect>
   );

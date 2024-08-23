@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { addProduct } from '../utils/contractInteractions';
+import { addProduct } from '../../utils/contractInteractions';
 import styles from './AddProduct.module.css';
-import '../styles/common.css';
+import '../../styles/common.css';
 
 function AddProduct() {
   const [productId, setProductId] = useState('');

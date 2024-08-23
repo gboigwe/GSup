@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { updateProductAuthenticity } from '../utils/contractInteractions';
+import { updateProductAuthenticity } from '../../utils/contractInteractions';
 import styles from './UpdateProductAuthenticity.module.css';
 import '../../styles/common.css';
 
