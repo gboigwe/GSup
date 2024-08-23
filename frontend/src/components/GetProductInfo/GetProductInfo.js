@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { getProductInfo } from '../utils/contractInteractions';
+import { getProductInfo } from '../../utils/contractInteractions';
+import styles from './GetProductInfo.module.css';
+import '../../styles/common.css';
 
 function GetProductInfo() {
   const [productId, setProductId] = useState('');
@@ -17,26 +19,42 @@ function GetProductInfo() {
   };
 
   return (
-    <div>
-      <h2>Get Product Info</h2>
-      <form onSubmit={handleSubmit}>
+    <div className={`${styles.infoContainer} card`}>
+      <h2 className={styles.title}>Get Product Info</h2>
+      <form onSubmit={handleSubmit} className={styles.form}>
         <input
           type="number"
           value={productId}
           onChange={(e) => setProductId(e.target.value)}
           placeholder="Product ID"
           required
+          className={`${styles.input} form-control`}
         />
-        <button type="submit">Get Info</button>
+        <button type="submit" className={`${styles.button} btn btn-primary`}>Get Info</button>
       </form>
       {productInfo && (
-        <div>
-          <h3>Product Information:</h3>
-          <p>Current Stage: {productInfo.currentStage}</p>
-          <p>Origin Info: {productInfo.originInfo || 'N/A'}</p>
-          <p>Manufacturing Info: {productInfo.manufacturingInfo || 'N/A'}</p>
-          <p>Distribution Info: {productInfo.distributionInfo || 'N/A'}</p>
-          <p>Retail Info: {productInfo.retailInfo || 'N/A'}</p>
+        <div className={styles.productInfo}>
+          <h3 className={styles.infoTitle}>Product Information:</h3>
+          <p className={styles.infoItem}>
+            <span className={styles.infoLabel}>Current Stage:</span>
+            <span className={styles.infoValue}>{productInfo.currentStage}</span>
+          </p>
+          <p className={styles.infoItem}>
+            <span className={styles.infoLabel}>Origin Info:</span>
+            <span className={styles.infoValue}>{productInfo.originInfo || 'N/A'}</span>
+          </p>
+          <p className={styles.infoItem}>
+            <span className={styles.infoLabel}>Manufacturing Info:</span>
+            <span className={styles.infoValue}>{productInfo.manufacturingInfo || 'N/A'}</span>
+          </p>
+          <p className={styles.infoItem}>
+            <span className={styles.infoLabel}>Distribution Info:</span>
+            <span className={styles.infoValue}>{productInfo.distributionInfo || 'N/A'}</span>
+          </p>
+          <p className={styles.infoItem}>
+            <span className={styles.infoLabel}>Retail Info:</span>
+            <span className={styles.infoValue}>{productInfo.retailInfo || 'N/A'}</span>
+          </p>
         </div>
       )}
     </div>
