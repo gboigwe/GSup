@@ -3,6 +3,7 @@ import { Connect } from '@stacks/connect-react';
 import { StacksTestnet } from '@stacks/network';
 import AddProduct from './components/AddProduct/AddProduct';
 import UpdateProductStage from './components/UpdateProductStage/UpdateProductStage';
+import UpdateProductAuthenticity from './components/UpdateProductAuthenticity';
 import './App.css';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <h1>Supply Chain Management</h1>
         <AddProduct />
         <UpdateProductStage />
+        <UpdateProductAuthenticity />
       </div>
     </Connect>
   );
