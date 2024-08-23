@@ -5,6 +5,7 @@ import AddProduct from './components/AddProduct/AddProduct';
 import UpdateProductStage from './components/UpdateProductStage/UpdateProductStage';
 import UpdateProductAuthenticity from './components/UpdateProductAuthenticity/UpdateProductAuthenticity';
 import GetProductInfo from './components/GetProductInfo/GetProductInfo';
+import AddUserToRole from './components/AddUserToRole/AddUserToRole';
 import './App.css';
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
         <UpdateProductStage />
         <UpdateProductAuthenticity />
         <GetProductInfo />
+        <AddUserToRole />
       </div>
     </Connect>
   );
