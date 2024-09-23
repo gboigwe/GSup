@@ -5,7 +5,7 @@ import {
   bufferCV,
   someCV,
   noneCV,
-  principalCV,
+  // principalCV,
   standardPrincipalCV
 } from '@stacks/transactions';
 import { StacksTestnet } from '@stacks/network';
